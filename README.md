@@ -99,5 +99,5 @@ JWT_SECRET=secret_key
 GOOGLE_MAPS_API_KEY=your_key
 
 # Frontend
-REACT_APP_API_URL=http://localhost:3000/api
+VITE_API_URL=http://localhost:3000/api
 ```
