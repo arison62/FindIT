@@ -1,17 +1,18 @@
 const express = require("express");
 const cors = require("cors");
+const userRoute = require("./routes/auth.route");
+const authMiddleware = require("./middlewares/auth.middleware");
 
 const app = express();
 
 app.use(cors());
-app.use(express.json({
-    urlencoded: {
-        extended: true
-    }
-}));
+app.use(express.urlencoded({extended: true}));
+app.use(express.json());
 
 
-app.get("/desc", (req, res) => {
+app.use("/api/auth", userRoute);
+
+app.get("/desc", authMiddleware ,(req, res) => {
     res.status(200).json({
         error: false,
         message: "",
@@ -21,6 +22,13 @@ app.get("/desc", (req, res) => {
             version: "1.0.0"
         }
 
+    })
+})
+
+app.use("*", (req, res) => {
+    res.status(404).json({
+        error: true,
+        message: "Route not found"
     })
 })
 module.exports = app;

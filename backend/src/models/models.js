@@ -27,7 +27,7 @@ const postSchema = new mongoose.Schema({
   },
   date_found: { type: Date },
   is_anonymous: { type: Boolean, default: false },
-  status: { type: String, enum: ['open', 'closed', 'pending'], default: 'open' },
+  status: { type: String, enum: ['found', 'lost', 'reported'], default: 'found' },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
   images: [{
