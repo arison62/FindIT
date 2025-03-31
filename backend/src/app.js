@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const userRoute = require("./routes/auth.route");
 const authMiddleware = require("./middlewares/auth.middleware");
-
+const  upload = require("./middlewares/fileUploadStorage");
 const app = express();
 
 app.use(cors());
@@ -12,7 +12,8 @@ app.use(express.json());
 
 app.use("/api/auth", userRoute);
 
-app.get("/desc", authMiddleware ,(req, res) => {
+app.get("/desc",upload.single("image") ,(req, res) => {
+    console.log(req.images);
     res.status(200).json({
         error: false,
         message: "",
