@@ -5,9 +5,9 @@
   "license": "ISC",
   "author": "",
   "type": "commonjs",
-  "main": "src/app.js",
+  "main": "server.js",
   "scripts": {
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
