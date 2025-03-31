@@ -31,6 +31,7 @@ const signUp = async (req, res) => {
         if (user) {
             return res.status(409).json({error: true, message: "User already exists"});
         }
+        console.log(req.body);
         const hashedPassword = await hashPassword(req.body.password);
         const newUser = new User({
             name: req.body.name,

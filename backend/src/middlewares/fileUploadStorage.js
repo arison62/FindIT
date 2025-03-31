@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
             return cb(new Error("Only image files are allowed!"));
         }
         //Image max size 50MB
-        const maxSize =2 * 1024 * 1024;
+        const maxSize = 50 * 1024 * 1024;
         console.log(file);
         if (file.size > maxSize) {
             return cb(new Error("File size is too large!"));

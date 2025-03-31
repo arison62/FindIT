@@ -12,7 +12,7 @@ app.use(express.json());
 
 app.use("/api/auth", userRoute);
 
-app.get("/desc",upload.single("image") ,(req, res) => {
+app.get("/desc", authMiddleware ,(req, res) => {
     console.log(req.images);
     res.status(200).json({
         error: false,
