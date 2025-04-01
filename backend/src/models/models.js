@@ -9,20 +9,25 @@ const userSchema = new mongoose.Schema({
   created_at: { type: Date, default: Date.now },
 });
 
+const categorySchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  created_at: { type: Date, default: Date.now },
+})
 const postSchema = new mongoose.Schema({
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   title: { type: String, required: true },
   description: { type: String, required: true },
-  category: { type: String, required: true },
+  category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
+  address: String,
   location: {
     type: {
       type: String,
       enum: ['Point'],
-      required: true
+      
     },
     coordinates: {
       type: [Number],
-      required: true
+     
     }
   },
   date_found: { type: Date },
@@ -64,9 +69,10 @@ const notificationSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', userSchema);
+const Category = mongoose.model('Category', categorySchema);
 const Post = mongoose.model('Post', postSchema);
 const Message = mongoose.model('Message', messageSchema);
 const Report = mongoose.model('Report', reportSchema);
 const Notification = mongoose.model('Notification', notificationSchema);
 
-module.exports = { User, Post, Message, Report, Notification };
+module.exports = { User, Post, Message, Report, Notification, Category };
