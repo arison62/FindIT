@@ -11,7 +11,7 @@ const storage = multer.diskStorage({
         }
         //Image max size 50MB
         const maxSize = 50 * 1024 * 1024;
-        console.log(file);
+        
         if (file.size > maxSize) {
             return cb(new Error("File size is too large!"));
         }
@@ -23,8 +23,7 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const ext = path.extname(file.originalname);
-        const name = path.basename(file.originalname, ext);
-        const fileName = `${name}-${uuid.v4()}${ext}`;
+        const fileName = `${uuid.v4()}${ext}`;
         
         if(req.images && req.images.length > 0){
             req.images.push(fileName);

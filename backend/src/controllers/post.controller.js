@@ -1,9 +1,21 @@
 const fs = require("fs");
-const {ObjectId} = require("mongoose");
+const {Types: {ObjectId}} = require("mongoose");
 const path = require("path");
 
 const {User, Post, Category} = require("../models/models");
+/**
+   body {
+      "title": "Post Title",
+       "category": "Category ID",
+     "description": "Post Description",
+     "location": {
+            "type": "Point",  
+          "coordinates": [123, 456]
+         },
+    }
 
+  
+ */
 const createPost = async (req, res)=> {
     
     try {
@@ -11,21 +23,32 @@ const createPost = async (req, res)=> {
         if (!user) {
             return res.status(401).json({error: true, message: "Unauthorized"});
         }
-        const {title, description, category, location} = req.body;
-        if (!title || !description || !category || !location) {
+        const {title, description, category, location, address} = req.body;
+        if (!title || !description || !category) {
             return res.status(400).json({error: true, message: "All fields are required"});
         }
+        if((!location || !location.coordinates || location.coordinates.length !== 2) && !address){
+            return res.status(400).json({error: true, message: "Location is required"});
+        }
+      
         const newPost = new Post({
-            user_id: user._id,
+            user_id: new ObjectId(user.id),
             title,
             description,
             location,
-            category: ObjectId(category),
+            category: new ObjectId(category),
             date_found: req.body.date_found || null,
             is_anonymous: req.body.is_anonymous || false,
             status: req.body.status || "found",
-            images: req.images || []
+            images: req.images.map((image) => {
+                return {
+                    image_url: image,
+                    uploaded_at: new Date()
+                }
+            }
+            )
         });
+       
         const savedPost = await newPost.save();
         if (!savedPost) {
             return res.status(500).json({error: true, message: "Post not created"});
@@ -68,3 +91,5 @@ const createCategory = async (req, res)=> {
         });
     }
 }
+
+module.exports = {createCategory, createPost}

@@ -18,15 +18,16 @@ const postSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
+  address: String,
   location: {
     type: {
       type: String,
       enum: ['Point'],
-      required: true
+      
     },
     coordinates: {
       type: [Number],
-      required: true
+     
     }
   },
   date_found: { type: Date },
