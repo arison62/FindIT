@@ -15,7 +15,7 @@ app.use(express.static("public"));
 
 
 app.use("/api/auth", userRoute);
-app.use("/api/post", authMiddleware, postRoute)
+app.use("/api/post", postRoute)
 app.get("/desc", authMiddleware ,(req, res) => {
     console.log(req.images);
     res.status(200).json({
