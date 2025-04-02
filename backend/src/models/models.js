@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -23,23 +24,28 @@ const postSchema = new mongoose.Schema({
     type: {
       type: String,
       enum: ['Point'],
-      
     },
     coordinates: {
       type: [Number],
-     
-    }
+    },
   },
   date_found: { type: Date },
   is_anonymous: { type: Boolean, default: false },
-  status: { type: String, enum: ['found', 'lost', 'reported'], default: 'found' },
+  status: { type: String, enum: ['found', 'lost', 'reported', 'closed'], default: 'found' },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
   images: [{
     image_url: { type: String, required: true },
     uploaded_at: { type: Date, default: Date.now },
   }],
+  finder_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  closed_at: { type: Date },
+  resolution_type: {
+    type: String,
+    enum: ['lost_and_found', 'found_and_returned'],
+  },
 });
+postSchema.index({ location: '2dsphere' });
 
 const messageSchema = new mongoose.Schema({
   sender_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },

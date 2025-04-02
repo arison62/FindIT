@@ -3,19 +3,7 @@ const {Types: {ObjectId}} = require("mongoose");
 const path = require("path");
 
 const {User, Post, Category} = require("../models/models");
-/**
-   body {
-      "title": "Post Title",
-       "category": "Category ID",
-     "description": "Post Description",
-     "location": {
-            "type": "Point",  
-          "coordinates": [123, 456]
-         },
-    }
 
-  
- */
 const createPost = async (req, res)=> {
     
     try {
@@ -72,6 +60,214 @@ const createPost = async (req, res)=> {
     }
 }
 
+const deletePost = async (req, res)=> {
+    try {
+        const postId = req.params.id;
+        if (!postId) {
+            return res.status(400).json({error: true, message: "Post ID is required"});
+        }
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({error: true, message: "Post not found"});
+        }
+        await Post.deleteOne({_id: postId});
+        return res.status(200).json({
+            error: false,
+            message: "Post deleted successfully"
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({error: true, message: "Internal server error"});
+    }
+}
+
+const getPost = async (req, res)=> {
+    try {
+        const postId = req.params.id;
+        if (!postId) {
+            return res.status(400).json({error: true, message: "Post ID is required"});
+        }
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({error: true, message: "Post not found"});
+        }
+        return res.status(200).json({
+            error: false,
+            message: "Post found successfully",
+            data: post
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({error: true, message: "Internal server error"});
+    }
+}
+// with pagination max 100 posts
+const getPosts = async (req, res)=> {
+    try {
+        const page = req.query.page || 1;
+        const limit = req.query.limit || 100;
+        const skip = (page - 1) * limit;
+        const posts = await Post.find().skip(skip).limit(limit);
+        return res.status(200).json({
+            error: false,
+            message: "Posts found successfully",
+            data: posts
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({error: true, message: "Internal server error"});
+    }
+}
+// get posts by category
+const getPostsByCategory = async (req, res)=> {
+    try {
+        const categoryId = req.params.id;
+        if (!categoryId) {
+            return res.status(400).json({error: true, message: "Category ID is required"});
+        }
+        const posts = await Post.find({category: categoryId});
+        if (!posts) {
+            return res.status(404).json({error: true, message: "Posts not found"});
+        }
+        return res.status(200).json({
+            error: false,
+            message: "Posts found successfully",
+            data: posts
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({error: true, message: "Internal server error"});
+    }
+}
+// get posts location nearby or same address
+// GeoJSON
+const getPostsByLocation = async (req, res)=> {
+    try {
+        const location = req.body.location;
+        const address = req.body.address;
+        if (!location && !address) {
+            return res.status(400).json({error: true, message: "Location or address is required"});
+        }
+        const query = {};
+        if (location) {
+            query.location = {
+                $near: {
+                    $geometry: location,
+                    $maxDistance: 10000
+                }
+            };
+        }
+        if (address) {
+            query.address = address;
+        }
+        const posts = await Post.find(query);
+        if (!posts) {
+            return res.status(404).json({error: true, message: "Posts not found"});
+        }
+        return res.status(200).json({
+            error: false,
+            message: "Posts found successfully",
+            data: posts
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({error: true, message: "Internal server error"});
+    }
+}
+
+// get posts by user
+const getPostsByUser = async (req, res)=> {
+    try {
+        const userId = req.params.id;
+        if (!userId) {
+            return res.status(400).json({error: true, message: "User ID is required"});
+        }
+        const posts = await Post.find({
+            user_id: userId
+        });
+        if(!posts){
+            return res.status(404).json({error: true, message: "Post not found"});
+        }else{
+            return res.status(200).json({
+                error: false,
+                message: "Post found successfully",
+                data: posts
+            });
+        }
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({
+            error: true,
+            message: "Internal server error"
+        })
+    }
+}
+
+// valid post #status: lost or found
+
+const getValidPost = (req, res)=>{
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 100;
+    const skip = (page - 1) * limit;
+
+    Post.find({$or: [{status: "found"}, {status: "lost"}]})
+        .skip(skip)
+        .limit(limit)
+        .then((posts) => {
+            if (!posts) {
+                return res.status(404).json({error: true, message: "Posts not found"});
+            }
+            return res.status(200).json({
+                error: false,
+                message: "Posts found successfully",
+                data: posts
+            });
+        })
+        .catch((error) => {
+            console.error(error);
+            return res.status(500).json({error: true, message: "Internal server error"});
+        });
+}
+
+const getPostByDateBefore = (req, res)=>{
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 100;
+    const skip = (page - 1) * limit;
+
+    const date = req.query.date;
+    const status = req.query.status;
+    const query = []
+    if(status){
+        query.push({status: status})
+    }else{
+        query.push({status: "lost"});
+        query.push({status: "found"});
+    }
+    Post.find({
+        created_at: {
+            $lt: new Date(date)
+        },
+        $or : query
+    }).skip(skip)
+    .limit(limit)
+    .then((posts) => {
+        if (!posts) {
+            return res.status(404).json({error: true, message: "Posts not found"});
+        }
+        return res.status(200).json({
+            error: false,
+            message: "Posts found successfully",
+            data: posts
+        });
+    })
+    .catch((error) => {
+        console.error(error);
+        return res.status(500).json({error: true, message: "Internal server error"});
+    })
+
+}
+
+
 const createCategory = async (req, res)=> {
     try {
         const newCategory = new Category({
@@ -92,4 +288,15 @@ const createCategory = async (req, res)=> {
     }
 }
 
-module.exports = {createCategory, createPost}
+module.exports = {
+    createCategory, 
+    createPost, 
+    deletePost, 
+    getPost, 
+    getPosts, 
+    getPostsByCategory, 
+    getPostsByLocation, 
+    getPostsByUser,
+    getValidPost,
+    getPostByDateBefore
+}
