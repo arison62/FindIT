@@ -1,20 +1,20 @@
-import { useEffect } from "react";
-
-
-import {Button} from "@/components/ui/button";
-
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import LayoutPage from "./pages/LayoutPage";
+import HomePage from "./pages/HomePage";
+import LoginPages from "./pages/LoginPages";
+import SignupPage from "./pages/SignupPage";
 
 function App() {
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      FindIt - Plateforme de retrouvailles d'objets
-      <div className="text-2xl">En construction </div>
-      <Button>
-  
-          <span>Partager</span>
-     
-      </Button>
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LayoutPage />}>
+          <Route index element={<HomePage />} />
+          <Route path="/login" element={<LoginPages />} />
+          <Route path="/signup" element={<SignupPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
-export default App
+export default App;
