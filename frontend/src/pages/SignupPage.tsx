@@ -1,22 +1,23 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import {z} from "zod";
-import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { post } from "@/api/client";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const formSchema = z.object({
     name: z.string().min(3, "Nom trop court"),
     email: z.string().email("Email invalide"),
-    password: z.string().min(8, "Mot de passe trop court"),
+    password: z.string().min(8, "Mot de passe doit avoir minimum 8 caractères"),
 })
 
 const SignupPage = () => {
   const navigate = useNavigate();
-      const [error, setError] = useState<string | null>(null);
+      const [send, setSend] = useState(false);
       const [loading, setLoading] = useState(false);
       const isFirstRender = useRef(true);
    const form = useForm<z.infer<typeof formSchema>>({
@@ -29,12 +30,14 @@ const SignupPage = () => {
 });
 
  useEffect(()=>{
+        
         if(isFirstRender.current){
             
             isFirstRender.current = false;
             return;
         }
         const sendData = async () => {
+            setLoading(true);
             const data =  await post<{token: string}>("/api/auth/signup", {
                 email: form.getValues("email"),
                 password: form.getValues("password"),
@@ -46,14 +49,27 @@ const SignupPage = () => {
                 console.log("Token: ", data);
                 navigate("/");
             }else{
-                console.log(data);
+                toast( data.message || "Une erreur reseau est survenu", {
+                    description: "Veuillez verifier vos identifiants",
+                    duration: 5000,
+                    icon: "⚠️",
+          
+                    action: {
+                      label: "Fermer",
+          
+                      onClick: () => {
+                        console.log("Toast closed");
+                      },
+                    },
+                  });
             }
+            setLoading(false);
         }
         sendData();
-    }, [loading]);
+    }, [form, navigate, send]);
 
 const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    setLoading(true);
+    setSend(!send);
     console.log(data);
 };
 return (
@@ -73,6 +89,7 @@ return (
                             <FormControl>
                                 <Input placeholder="Email" {...field} />    
                             </FormControl>
+                            <FormMessage />
                         </FormItem>
                     )}
                 >
@@ -87,6 +104,7 @@ return (
                             <FormControl>
                                 <Input placeholder="Nom" {...field} />    
                             </FormControl>
+                            <FormMessage />
                         </FormItem>
                     )}
                 >
@@ -101,12 +119,13 @@ return (
                             <FormControl>
                                 <Input placeholder="Mot de passe" {...field} />    
                             </FormControl>
+                            <FormMessage />
                         </FormItem>
                     )}
                 >
 
                 </FormField>
-                <Button type="submit" className="bg-blue-500 hover:bg-blue-900">Creer un compte</Button>
+                <Button type="submit" disabled={loading} className="bg-blue-500 hover:bg-blue-900">Creer un compte</Button>
             </form>
             <div className="flex flex-col justify-between mt-4 items-center">
                 
