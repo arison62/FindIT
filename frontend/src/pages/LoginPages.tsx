@@ -20,7 +20,7 @@ import { toast } from "sonner";
 
 const formSchema = z.object({
   email: z.string().email("Email invalide"),
-  password: z.string().min(8, "Mot de passe doit avoir au moins 8 caractères"),
+  password: z.string().min(7, "Mot de passe doit avoir au moins 8 caractères"),
 });
 const LoginPages = () => {
   const navigate = useNavigate();

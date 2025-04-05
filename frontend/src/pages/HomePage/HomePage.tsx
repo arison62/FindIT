@@ -158,7 +158,7 @@ const HomePage = () => {
           </li>
         </ul>
       </div>
-      <div className="flex flex-col w-full bg-white">
+      <div className="flex flex-col w-full bg-white overflow-scroll">
         <Outlet />
       </div>
     </div>

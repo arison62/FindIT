@@ -4,7 +4,6 @@ import { BACKEND_URL } from "@/lib/constants";
 const API_CONFIG = {
   baseUrl: BACKEND_URL,
   headers: {
-    "Content-Type": "application/json",
     Accept: "application/json",
   
     
@@ -27,11 +26,16 @@ function buildUrl(path: string): string {
   return url.toString();
 }
 
-function getHeaders(): HeadersInit {
+function getHeaders(headersArgs?: HeadersInit): HeadersInit {
   const headers = new Headers(API_CONFIG.headers);
   const token = localStorage.getItem("token");
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
+  }
+  if (headersArgs) {
+    Object.keys(headersArgs).forEach((key) => {
+      headers.set(key, (headersArgs as Record<string, string>)[key]);
+    });
   }
   return headers;
 }
@@ -62,15 +66,17 @@ export async function get<T>(
 
 export async function post<T, D = any>(
   path: string,
-  data?: D
+  data?: D | FormData,
+  headers?: HeadersInit
 ): Promise<APIResponseWithStatus<T>> {
-    
+   console.log(data);
   try {
+    console.log(getHeaders(headers));
     const response = await fetch(buildUrl(path), {
       method: "POST",
-      headers: getHeaders(),
+      headers: getHeaders(headers),
      
-      body: data ? JSON.stringify(data) : undefined,
+      body: data instanceof FormData ? data : data ? JSON.stringify(data) : undefined,
     });
     return handleResponse<T>(response);
   } catch (error: any) {

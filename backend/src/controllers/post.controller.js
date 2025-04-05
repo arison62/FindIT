@@ -5,7 +5,7 @@ const path = require("path");
 const {User, Post, Category} = require("../models/models");
 
 const createPost = async (req, res)=> {
-    
+
     try {
         const user = req.user;
         if (!user) {
@@ -18,7 +18,7 @@ const createPost = async (req, res)=> {
         if((!location || !location.coordinates || location.coordinates.length !== 2) && !address){
             return res.status(400).json({error: true, message: "Location is required"});
         }
-      
+        console.log("createPost");
         const newPost = new Post({
             user_id: new ObjectId(user.id),
             title,
@@ -288,6 +288,24 @@ const createCategory = async (req, res)=> {
     }
 }
 
+const getCategories = async (req, res)=> {
+ 
+    try {
+        const categories = await Category.find();
+        return res.status(200).json({
+            error: false,
+            message: "Categories found successfully",
+            data: categories
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            error: true,
+            message: "Internal server error"
+        });
+    }
+}
+
 module.exports = {
     createCategory, 
     createPost, 
@@ -298,5 +316,6 @@ module.exports = {
     getPostsByLocation, 
     getPostsByUser,
     getValidPost,
-    getPostByDateBefore
+    getPostByDateBefore,
+    getCategories
 }

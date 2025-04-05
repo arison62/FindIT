@@ -1,11 +1,12 @@
 const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
-const userRoute = require("./routes/auth.route");
+const userAuthRoute = require("./routes/auth.route");
 const postRoute = require("./routes/post.route");
+const userRoute = require("./routes/user.route");
 const authMiddleware = require("./middlewares/auth.middleware");
 const app = express();
-const updload = multer()
+
 
 const corsOptions = {
     origin: "http://localhost:5173",
@@ -20,7 +21,9 @@ app.use(express.json());
 app.use(express.static("public"));
 
 
-app.use("/api/auth", userRoute);
+
+app.use("/api/auth", userAuthRoute);
+app.use("/api", userRoute);
 app.use("/api/posts", postRoute)
 app.get("/desc", authMiddleware ,(req, res) => {
     console.log(req.images);

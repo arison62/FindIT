@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage/HomePage";
 import LoginPages from "./pages/LoginPages";
 import SignupPage from "./pages/SignupPage";
 import PostView from "./pages/PostView";
+import AddPost from "./pages/HomePage/AddPost";
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
           <Route element={<HomePage />} >
             <Route index element={<PostView />} />
             <Route path="profile" element={<div>Profile</div>} />
-            <Route path="post" element={<div>Post</div>} />
+            <Route path="post" element={<AddPost />} />
             <Route path="message" element={<div>Search</div>} />
         
           </Route>
