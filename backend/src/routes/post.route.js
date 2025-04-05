@@ -19,6 +19,9 @@ router.get('/category/:id', getPostsByCategory);
 router.get('/location', getPostsByLocation);
 router.get('/user/:id', getPostsByUser);
 router.get('/valid', getValidPost);
-router.get('/ordered', getPostByDateBefore)
+router.get('/ordered', getPostByDateBefore);
+router.get('/user/:id', getUserByEmail);
+
+
 
 module.exports = router;
