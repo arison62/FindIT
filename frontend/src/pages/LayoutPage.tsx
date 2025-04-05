@@ -18,7 +18,9 @@ const LayoutPage = () => {
                   to="/"
                   className={({ isActive }) => (isActive ? "underline" : "")}
                 >
-                  Acceuil
+                  <Button variant={'link'} className="text-white">
+                    Accueil
+                  </Button>
                 </NavLink>
               </li>
               <li>
