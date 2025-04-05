@@ -7,15 +7,21 @@ const authMiddleware = require("./middlewares/auth.middleware");
 const app = express();
 const updload = multer()
 
-app.use(cors());
-// app.use(updload.none());
+const corsOptions = {
+    origin: "http://localhost:5173",
+    credentials: true, // Autorise les cookies/sessions
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+  };
+
+app.use(cors(corsOptions));
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(express.static("public"));
 
 
 app.use("/api/auth", userRoute);
-app.use("/api/post", postRoute)
+app.use("/api/posts", postRoute)
 app.get("/desc", authMiddleware ,(req, res) => {
     console.log(req.images);
     res.status(200).json({

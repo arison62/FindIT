@@ -53,6 +53,7 @@ export async function get<T>(
       headers: getHeaders(),
     
     });
+   console.log("URL : ", fullUrl.toString())
     return handleResponse<T>(response);
   } catch (error: any) {
     return handleFetchError<T>(error);
@@ -107,6 +108,7 @@ export async function del<T, D = any>(
     });
     return handleFetchError<T>(response);
   } catch (error: any) {
+    console.error(error);
     return handleFetchError<T>(error);
   }
 }
