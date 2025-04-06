@@ -4,10 +4,7 @@ import { BACKEND_URL } from "@/lib/constants";
 const API_CONFIG = {
   baseUrl: BACKEND_URL,
   headers: {
-    Accept: "application/json",
-  
-    
-  
+    Accept: "application/json"
   },
 };
 
@@ -57,26 +54,26 @@ export async function get<T>(
       headers: getHeaders(),
     
     });
-   console.log("URL : ", fullUrl.toString())
+  
     return handleResponse<T>(response);
   } catch (error: any) {
     return handleFetchError<T>(error);
   }
 }
 
-export async function post<T, D = any>(
+export async function post<T>(
   path: string,
-  data?: D | FormData,
+  data?: FormData,
   headers?: HeadersInit
 ): Promise<APIResponseWithStatus<T>> {
-   console.log(data);
+ console.log(data)
   try {
-    console.log(getHeaders(headers));
+    
     const response = await fetch(buildUrl(path), {
       method: "POST",
       headers: getHeaders(headers),
      
-      body: data instanceof FormData ? data : data ? JSON.stringify(data) : undefined,
+      body: data 
     });
     return handleResponse<T>(response);
   } catch (error: any) {
@@ -123,7 +120,7 @@ async function handleResponse<T>(
   response: Response
 ): Promise<APIResponseWithStatus<T>> {
   let data: any = {};
-  console.log("response", response)
+
   try {
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
@@ -158,6 +155,7 @@ async function handleResponse<T>(
 }
 
 function handleFetchError<T>(error: any): APIResponseWithStatus<T> {
+  console.error("handleError")
   return {
     data: {} as T,
     status: 0,

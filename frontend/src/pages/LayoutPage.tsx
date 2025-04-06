@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { useUser } from "@/hooks/use-user";
 import { Outlet, NavLink } from "react-router-dom";
 
 const LayoutPage = () => {
+  const { is_logged_in } = useUser();
+  console.log(is_logged_in)
   return (
     <>
       <header
@@ -18,24 +21,27 @@ const LayoutPage = () => {
                   to="/"
                   className={({ isActive }) => (isActive ? "underline" : "")}
                 >
-                  <Button variant={'link'} className="text-white">
+                  <Button variant={"link"} className="text-white">
                     Accueil
                   </Button>
                 </NavLink>
               </li>
-              <li>
-                <NavLink
-                  to="/login"
-                  className={({ isActive }) => (isActive ? "underline" : "")}
-                >
-                  <Button
-                    variant={"outline"}
-                    className="bg-transparent hover:bg-transparent"
+              {!is_logged_in && (
+                <li>
+                  <NavLink
+                    to="/login"
+                    className={({ isActive }) => (isActive ? "underline" : "")}
                   >
-                    Se connecter
-                  </Button>
-                </NavLink>
-              </li>
+                    <Button
+                      variant={"outline"}
+                      className="bg-transparent hover:bg-transparent"
+                    >
+                      Se connecter
+                    </Button>
+                  </NavLink>
+                </li>
+              )}
+
               <li>
                 <Button className="bg-green-800 hover:bg-green-700">
                   Poster un objet

@@ -5,6 +5,7 @@ const userAuthRoute = require("./routes/auth.route");
 const postRoute = require("./routes/post.route");
 const userRoute = require("./routes/user.route");
 const authMiddleware = require("./middlewares/auth.middleware");
+const upload = require("./middlewares/fileUploadStorage");
 const app = express();
 
 
@@ -22,7 +23,7 @@ app.use(express.static("public"));
 
 
 
-app.use("/api/auth", userAuthRoute);
+app.use("/api/auth", upload.none() ,userAuthRoute);
 app.use("/api", userRoute);
 app.use("/api/posts", postRoute)
 app.get("/desc", authMiddleware ,(req, res) => {

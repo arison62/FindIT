@@ -17,6 +17,7 @@ import { post } from "@/api/client";
 import { useNavigate } from "react-router-dom";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
+import { useUser } from "@/hooks/use-user";
 
 const formSchema = z.object({
   email: z.string().email("Email invalide"),
@@ -27,6 +28,7 @@ const LoginPages = () => {
   const [loading, setLoading] = useState(false);
   const [send, setSend] = useState(false);
   const isFirstRender = useRef(true);
+  const {setUser} = useUser();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -41,15 +43,25 @@ const LoginPages = () => {
       return;
     }
     const sendData = async () => {
+      const formData = new FormData()
+      formData.set("email", form.getValues("email"))
+      formData.set("password", form.getValues("password"))
+      
       setLoading(true);
-      const data = await post<{ token: string }>("/api/auth/signin", {
-        email: form.getValues("email"),
-        password: form.getValues("password"),
-      });
+      const data = await post<{ token: string; expire_in: number }>(
+        "/api/auth/signin",
+        formData
+      );
 
       if (data.status === 200) {
         localStorage.setItem("token", data.data.token);
-
+        localStorage.setItem("expire_in", data.data.expire_in.toString());
+        if (setUser) {
+          setUser({
+              is_admin: false,
+              is_logged_in: true
+          });
+      }
         navigate("/");
       } else {
         toast(data.message || "Une erreur reseau est survenu", {
@@ -71,9 +83,9 @@ const LoginPages = () => {
     sendData();
   }, [form, navigate, send]);
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async () => {
     setSend(!send);
-    console.log(data);
+    
   };
   return (
     <div className="max-w-screen w-full flex flex-col items-center justify-center">

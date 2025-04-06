@@ -5,10 +5,12 @@ import LoginPages from "./pages/LoginPages";
 import SignupPage from "./pages/SignupPage";
 import PostView from "./pages/PostView";
 import AddPost from "./pages/HomePage/AddPost";
+import { UserProvider } from "./hooks/use-user";
 
 function App() {
   return (
     <BrowserRouter>
+      <UserProvider>
       <Routes>
         <Route path="/" element={<LayoutPage />}>
           <Route element={<HomePage />} >
@@ -22,6 +24,7 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
         </Route>
       </Routes>
+      </UserProvider> 
     </BrowserRouter>
   );
 }

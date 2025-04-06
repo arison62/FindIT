@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { get, post } from "@/api/client";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { useUser } from "@/hooks/use-user";
 
 // Validation schema basé sur le modèle mongoose
 const formSchema = z.object({
@@ -41,7 +42,7 @@ const formSchema = z.object({
   category: z.string().min(1, "Veuillez sélectionner une catégorie"),
   address: z.string().min(5, "Veuillez indiquer une adresse valide"),
   date_found: z.string().optional(),
-  is_anonymous: z.boolean().default(false),
+  is_anonymous: z.boolean(),
   status: z.enum(["found", "lost"]),
   images: z.array(z.any()).min(1, "Veuillez ajouter au moins une image"),
 });
@@ -52,6 +53,7 @@ const AddPost = () => {
   const [categories, setCategories] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
   const fileInputRef = useRef(null);
+  const {is_logged_in} = useUser()
 
   // Initialiser le formulaire
   const form = useForm<z.infer<typeof formSchema>>({
@@ -67,7 +69,15 @@ const AddPost = () => {
       images: [],
     },
   });
-
+ useEffect(()=>{
+  // redirect if not login
+  if(!is_logged_in){
+    toast("Vous devez etre connecte", {
+      description: "Veuillez vous connecter"
+    });
+    navigate("/login")
+  }
+ }, [])
   // Charger les catégories depuis l'API
   useEffect(() => {
     const fetchCategories = async () => {
