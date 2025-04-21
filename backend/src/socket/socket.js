@@ -30,6 +30,7 @@ function initializeSocket(server) {
 
     // Écouter les nouveaux messages
     socket.on('send_message', async (data) => {
+      console.log('Message data:', data);
       try {
         const { receiverId, postId, content } = data;
         
@@ -134,7 +135,7 @@ function initializeSocket(server) {
         const messages = await Message.find({
           $or: [
             {  post_id: postId },
-            {  post_id: postId }
+            { sender_id: receiverId, receiver_id: userId, post_id: postId }
           ]
         }).sort({ sent_at: 1 });
 

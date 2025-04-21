@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, use } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Send, Check, CheckCheck, User, Loader2 } from 'lucide-react';
-import { get } from '@/api/client';
+import { Send, Check, CheckCheck, Loader2 } from 'lucide-react';
 import { BACKEND_URL } from '@/lib/constants';
 
 const ChatComponent = ({ postId, otherUserId, currentUser, otherUserName }) => {
@@ -19,7 +18,8 @@ const ChatComponent = ({ postId, otherUserId, currentUser, otherUserName }) => {
   const [isConnecting, setIsConnecting] = useState(true);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
-  
+  const [connected, setConnected] = useState(false); // Track connection status
+
   // Fonction pour obtenir les initiales d'un nom
   const getInitials = (name) => {
     return name
@@ -34,9 +34,7 @@ const ChatComponent = ({ postId, otherUserId, currentUser, otherUserName }) => {
   // Connexion au socket
   useEffect(() => {
     const token = localStorage.getItem('token');
-    console.log('Connecting to socket with token:', token);
     setIsConnecting(true);
-    // Créer une nouvelle instance de socket
     const newSocket = io(BACKEND_URL, {
       auth: {
         token: token
@@ -46,8 +44,7 @@ const ChatComponent = ({ postId, otherUserId, currentUser, otherUserName }) => {
     newSocket.on('connect', () => {
       console.log('Connected to socket server');
       setIsConnecting(false);
-      
-      // Rejoindre la room de cette conversation
+      setConnected(true); // Set connected to true
       newSocket.emit('join_room', {
         receiverId: otherUserId,
         postId: postId
@@ -57,6 +54,7 @@ const ChatComponent = ({ postId, otherUserId, currentUser, otherUserName }) => {
     newSocket.on('connect_error', (error) => {
       console.error('Socket connection error:', error.message);
       setIsConnecting(false);
+      setConnected(false);
     });
 
     newSocket.on('message_history', (data) => {
@@ -65,15 +63,11 @@ const ChatComponent = ({ postId, otherUserId, currentUser, otherUserName }) => {
     });
 
     newSocket.on('receive_message', (message) => {
-      console.log(message);
       setMessages(prevMessages => [...prevMessages, message]);
-      
-      // Marquer comme lu si le message est reçu
-      if (message.sender_id !== currentUser._id) {
+      scrollToBottom();
+      if (message.receiver_id === currentUser._id) {
         newSocket.emit('mark_as_read', { messageIds: [message._id] });
       }
-      
-      scrollToBottom();
     });
 
     newSocket.on('user_typing', (data) => {
@@ -90,7 +84,6 @@ const ChatComponent = ({ postId, otherUserId, currentUser, otherUserName }) => {
 
     setSocket(newSocket);
 
-    // Cleanup à la déconnexion
     return () => {
       if (newSocket) {
         newSocket.emit('leave_room', {
@@ -102,67 +95,38 @@ const ChatComponent = ({ postId, otherUserId, currentUser, otherUserName }) => {
     };
   }, [postId, otherUserId, currentUser._id]);
 
-  // Charger les messages via API (alternative au socket)
-  const loadMessages = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await get(
-        `/api/chat/messages/${postId}/${otherUserId}`
-      );
-      console.log('Messages loaded:', response);
-      if (response.error === false) {
-        setMessages(response.data);
-        scrollToBottom();
-      }
-    } catch (error) {
-      console.error('Error loading messages:', error);
-    }
-  };
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    
-    if (!inputMessage.trim() || !socket) return;
-    
-    // Envoyer le message via socket
+    if (!inputMessage.trim() || !socket || !connected) return; // Check for socket and connection
     socket.emit('send_message', {
       receiverId: otherUserId,
       postId: postId,
       content: inputMessage
     });
-    
     setInputMessage('');
-    
-    // Arrêter l'indicateur de frappe
     handleStopTyping();
   };
 
   const handleInputChange = (e) => {
     setInputMessage(e.target.value);
-    
-    // Envoyer l'événement "typing"
-    if (socket) {
+    if (socket && connected) { // Check for socket and connection
       socket.emit('typing', {
         receiverId: otherUserId,
         postId: postId
       });
-      
-      // Réinitialiser le timeout
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
-      
-      // Arrêter d'indiquer la frappe après 2 secondes d'inactivité
       typingTimeoutRef.current = setTimeout(handleStopTyping, 2000);
     }
   };
 
   const handleStopTyping = () => {
-    if (socket) {
+    if (socket && connected) { // Check for socket and connection
       socket.emit('stop_typing', {
         receiverId: otherUserId,
         postId: postId
@@ -170,7 +134,6 @@ const ChatComponent = ({ postId, otherUserId, currentUser, otherUserName }) => {
     }
   };
 
-  // Formatage de la date pour l'affichage
   const formatMessageTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -181,10 +144,8 @@ const ChatComponent = ({ postId, otherUserId, currentUser, otherUserName }) => {
     return date.toLocaleDateString();
   };
 
-  // Grouper les messages par date
   const groupMessagesByDate = () => {
     const groups = {};
-    
     messages.forEach(message => {
       const date = formatMessageDate(message.sent_at);
       if (!groups[date]) {
@@ -192,7 +153,6 @@ const ChatComponent = ({ postId, otherUserId, currentUser, otherUserName }) => {
       }
       groups[date].push(message);
     });
-    
     return groups;
   };
 
@@ -208,9 +168,9 @@ const ChatComponent = ({ postId, otherUserId, currentUser, otherUserName }) => {
           </Avatar>
           <div>
             <CardTitle className="text-lg">{otherUserName || 'Utilisateur'}</CardTitle>
-            {isConnecting ? (
+             {isConnecting ? (
               <div className="flex items-center text-sm text-muted-foreground">
-                <Loader2 className="h-3 w-3 animate-spin mr-1" /> 
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
                 Connexion...
               </div>
             ) : (
@@ -292,12 +252,12 @@ const ChatComponent = ({ postId, otherUserId, currentUser, otherUserName }) => {
             onChange={handleInputChange}
             placeholder="Tapez votre message..."
             className="flex-1"
-            disabled={isConnecting}
+            disabled={isConnecting || !connected} // Disable when connecting or disconnected
           />
-          <Button 
-            type="submit" 
-            size="icon" 
-            disabled={!inputMessage.trim() || isConnecting}
+          <Button
+            type="submit"
+            size="icon"
+            disabled={!inputMessage.trim() || isConnecting || !connected} // Disable when empty or connecting
           >
             <Send className="h-4 w-4" />
           </Button>
