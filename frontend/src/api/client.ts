@@ -4,7 +4,7 @@ import { BACKEND_URL } from "@/lib/constants";
 const API_CONFIG = {
   baseUrl: BACKEND_URL,
   headers: {
-    Accept: "application/json"
+    "Accept": "application/json"
   },
 };
 
@@ -25,23 +25,30 @@ function buildUrl(path: string): string {
 
 function getHeaders(headersArgs?: HeadersInit): HeadersInit {
   const headers = new Headers(API_CONFIG.headers);
+  
+  
   const token = localStorage.getItem("token");
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
+
   if (headersArgs) {
-    Object.keys(headersArgs).forEach((key) => {
-      headers.set(key, (headersArgs as Record<string, string>)[key]);
+    const incomingHeaders = new Headers(headersArgs);
+    incomingHeaders.forEach((value, key) => {
+      headers.set(key, value);
     });
   }
-  return headers;
-}
 
+
+
+  return headers
+}
 export async function get<T>(
   path: string,
   params?: Record<string, any>
 ): Promise<APIResponseWithStatus<T>> {
   try {
+    
     const fullUrl = new URL(buildUrl(path));
     if (params) {
       Object.keys(params).forEach((key) => {
@@ -54,9 +61,10 @@ export async function get<T>(
       headers: getHeaders(),
     
     });
-  
+    
     return handleResponse<T>(response);
   } catch (error: any) {
+    console.error("error", error);
     return handleFetchError<T>(error);
   }
 }

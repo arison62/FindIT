@@ -8,6 +8,7 @@ const createPost = async (req, res)=> {
 
     try {
         const user = req.user;
+        console.log(user)
         if (!user) {
             return res.status(401).json({error: true, message: "Unauthorized"});
         }
@@ -18,9 +19,10 @@ const createPost = async (req, res)=> {
         if((!location || !location.coordinates || location.coordinates.length !== 2) && !address){
             return res.status(400).json({error: true, message: "Location is required"});
         }
+        console.log(user.id);
         console.log("createPost");
         const newPost = new Post({
-            user_id: new ObjectId(user.id),
+            user_id: new ObjectId(user.user.id),
             title,
             description,
             location,
@@ -84,8 +86,12 @@ const deletePost = async (req, res)=> {
 const getPost = async (req, res)=> {
     try {
         const postId = req.params.id;
+        
         if (!postId) {
             return res.status(400).json({error: true, message: "Post ID is required"});
+        }
+        if (!ObjectId.isValid(postId)) {
+            return res.status(400).json({error: true, message: "Invalid Post ID"});
         }
         const post = await Post.findById(postId);
         if (!post) {
@@ -289,7 +295,7 @@ const createCategory = async (req, res)=> {
 }
 
 const getCategories = async (req, res)=> {
- 
+    console.log("categories");
     try {
         const categories = await Category.find();
         return res.status(200).json({
