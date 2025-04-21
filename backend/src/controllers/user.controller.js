@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const { User } = require("../models/models");
 const { comparePassword, hashPassword } = require("../utils/password_utils");
 const { generateToken, parseExpiration } = require("../utils/token_utils");
@@ -77,11 +78,44 @@ const signUp = async (req, res) => {
   }
 };
 
-const getUserByEmail = async (req, res) => {
+const getUser = async (req, res) => {
   try {
-    const email = req.params.id;
-    const user = await User.findOne({ email });
 
+    const id = req.params.id;
+    if(id == "me"){
+      const {id} = req.user.user;
+      console.log("me : ", id)
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+          error: true,
+          message: "Invalid user ID",
+          data: null,
+        });
+      }
+      const user = await User.findById(id).select("-password_hash");
+      if (!user) {
+        return res.status(404).json({
+          error: true,
+          message: "User not found",
+          data: null,
+        });
+      }
+      return res.status(200).json({
+        error: false,
+        message: "User retrieved successfully",
+        data: user,
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        error: true,
+        message: "Invalid user ID",
+        data: null,
+      });
+    }
+    const user = await User.findById(id).select("-password_hash");
+    console.log(id)
     if (!user) {
       return res.status(404).json({
         error: true,
@@ -89,12 +123,12 @@ const getUserByEmail = async (req, res) => {
         data: null,
       });
     }
-
     return res.status(200).json({
       error: false,
       message: "User retrieved successfully",
       data: user,
     });
+
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -108,5 +142,5 @@ const getUserByEmail = async (req, res) => {
 module.exports = {
   signIn,
   signUp,
-  getUserByEmail,
+  getUser,
 };

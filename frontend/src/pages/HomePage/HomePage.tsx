@@ -73,7 +73,7 @@ const HomePage = () => {
           </li>
           <li>
             <NavLink
-              to="message"
+              to="chat"
               className={({ isActive }) => (isActive ? "group isActive" : "")}
             >
               <Button
