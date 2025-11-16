@@ -30,9 +30,9 @@ const ConversationList = ({ currentUser, onSelectConversation }) => {
           Authorization: `Bearer ${token}`
         }
       });
-
-      if (response.data.error === false) {
-        setConversations(response.data.data);
+      console.log(response.data)
+      if (response.error === false) {
+        setConversations(response.data);
       }
     } catch (error) {
       console.error('Error fetching conversations:', error);
@@ -134,7 +134,7 @@ const ConversationList = ({ currentUser, onSelectConversation }) => {
               <Button
                 key={`${convo.post_id}_${convo.with_user._id}`}
                 variant="ghost"
-                className={`w-full justify-start p-3 border-b hover:bg-slate-50 ${
+                className={`w-full justify-start p-6 border-b mb-2 hover:bg-slate-50 ${
                   convo.unread_count > 0 ? 'bg-slate-50' : ''
                 }`}
                 onClick={() => handleSelectConversation(convo)}
@@ -159,17 +159,6 @@ const ConversationList = ({ currentUser, onSelectConversation }) => {
                       Re: {convo.post.title}
                     </div>
                     
-                    <div className="flex justify-between items-center">
-                      <span className={`text-xs ${convo.unread_count > 0 ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
-                        {truncateText(convo.last_message.content)}
-                      </span>
-                      
-                      {convo.unread_count > 0 && (
-                        <Badge variant="default" className="ml-2 px-1.5 py-0 h-5 min-w-5 text-xs flex items-center justify-center">
-                          {convo.unread_count}
-                        </Badge>
-                      )}
-                    </div>
                   </div>
                 </div>
               </Button>
